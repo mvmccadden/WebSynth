@@ -14,6 +14,10 @@
 //= Normal Functions =//
 //====================//
 
+function DrawSelectionGUI() {
+  
+}
+
 function NormalEvents() {
   // If a wave is selected and LEFT-SHIFT (16) is down then move it 
   // to the current mouse position

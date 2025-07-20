@@ -251,6 +251,12 @@ function MidiKeyPressed() {
       UpdateSustainText();
     }
   }
+  else if(key == 'ArrowRight') {
+    ArrowSelect('right');
+  }
+  else if(key == 'ArrowLeft') {
+    ArrowSelect('left');
+  }
   // If the octave isn't being adjust then check all keys for pressed
   else {
     for(const note of MIDI_NOTES) {

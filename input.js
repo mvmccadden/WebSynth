@@ -36,6 +36,59 @@ function EnterInterp(strVal, posVal) {
 }
 
 /*!
+ *  Switches which object is selected if one is selected, or selects an obj
+ *  if none is selected.
+ *
+ *  Pressing Right when selected moves the selection up the array in order
+ *  of creation for objects on screen and to the last object if none is 
+ *  selected.
+ *
+ *  Pressing Left when selected moves the selection down the array in order
+ *  of creation for objects on screen and to the first object if none is 
+ *  selected.
+ *
+ *  \param side
+ *    Tells the function what direction is being used with 'left' indicating
+ *    left and ANYTHING ELSE indicating right
+ */
+function ArrowSelect(side) {
+  // Get the lenght as we will need it for either condition
+  const waveLength = waves.length;
+
+  console.log("SELECTING");
+
+  // If there isn't a valid wave selected then select the first wave in
+  // the wave array
+  if(selectedWave == 'undefined') {
+    if(waveLength > 0) {
+      if(side == 'left') {
+        waves[0].Select();
+      }
+      else {
+        waves[waveLength - 1].Select();
+      }
+    }
+  }
+  else {
+    // Get the selected index and then decrement of increment based
+    // on the side given
+    let selectedIndex = waves.indexOf(selectedWave);
+    let nextIndex;
+
+    if(side == 'left') {
+    // Adds a series of length in order to ensure that we do not go to a 
+    // negative index as that is invalid
+      nextIndex = (--selectedIndex + waveLength) % waveLength;
+    }
+    else {
+      nextIndex = (++selectedIndex) % waveLength;
+    }
+
+    waves[nextIndex].Select();
+  }
+}
+
+/*!
  *  If a key is pressed and it is a number based key then track it so that
  *  we can update an objects position if an object is selected
  */
