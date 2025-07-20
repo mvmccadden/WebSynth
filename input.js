@@ -17,10 +17,12 @@ function EnterInterp(strVal, posVal) {
   if(selectedWave != 'undefined') {
     let [x,y] = selectedWave.Pos;
     if(strVal == 'fq') {
-      x = constrain(map(posVal, 0, 2000, 0, windowSize.x), 0, windowSize.x);
+      x = constrain(map(posVal, MIN_LOG_FREQ, MAX_LOG_FREQ, 0, windowSize.x)
+        , 0, windowSize.x);
     }
     else if(strVal == 'ap') {
-      y = constrain(map(posVal, 100, 0, 0, windowSize.y), 0, windowSize.y);
+      y = constrain(map(posVal, MAX_AMP, MIN_AMP, 0, windowSize.y)
+        , 0, windowSize.y);
     }
     selectedWave.SetPos([x,y]);
     // Update the object so both the osc and the position of the visual
@@ -86,6 +88,40 @@ function ArrowSelect(side) {
 
     waves[nextIndex].Select();
   }
+}
+
+/*!
+ *  A function used for handling up and down arrow input which adjusts the 
+ *  selected wave's amplitude in increments of 10 (or 0.10)
+ *
+ *  Up moves the amplitude up 10
+ *  Down moves the amplitude down 10
+ *
+ *  \param dir
+ *    Indicates the direciton of the amplitude movement with 'up'
+ *    indicating up and ANYTHING ELSE indicating down
+ */
+function ArrowAmpAdjust(dir) {
+  // Ensure a wave is selected
+  if(selectedWave == 'undefined') {
+    return;
+  }
+
+  let amp = selectedWave.Amp;
+  let [x,y] = selectedWave.Pos;
+
+  if(dir == 'up') {
+    amp += 0.1;
+  }
+  else {
+    amp -= 0.1;
+  }
+  
+  // Moves the object to the accurate location for the desired amplitude as 
+  // the amplitude is based on position
+  y = constrain(map(amp, MAX_AMP, MIN_AMP, 0, windowSize.y), 0, windowSize.y);
+
+  selectedWave.SetPos([x,y]);
 }
 
 /*!
