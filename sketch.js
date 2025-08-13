@@ -84,11 +84,19 @@ function setup() {
   modeText = new Text([10, 30], [255,255,255,255], MODES[activeMode].text
     , 20, 0, false, false);
   extraInfoText = new Text([10, 90], [255,255,255,255], "", 20, 0, true, false);
+
+  gui = new GUI();
+  // Set the x limit of the window size to the edge
+  // of the GUI
+  windowSize.x = gui.PosX;
 }
 
 function draw() {
   // Clear the background
   background(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b);
+
+  gui.Update();
+  gui.Draw();
 
   // Do the update function that proper to the mode that is active
   if(MODES[activeMode].update != 'undefined') {

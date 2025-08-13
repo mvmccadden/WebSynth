@@ -18,6 +18,20 @@ const SELECT_COLOR = {
 const PLAYING_COLOR = {
   r: 10, g: 230, b: 20
 }
+
+// Shape colors
+const SINE_COLOR = {
+  r: 22, g: 133, b: 248, a: 255
+}
+const TRIANGLE_COLOR = {
+  r: 233, g: 0, b: 255, a: 255
+}
+const SAWTOOTH_COLOR = {
+  r: 245, g: 39, b: 137, a: 255
+}
+const SQUARE_COLOR = {
+  r: 250, g: 235, b: 44, a: 255
+}
 // Color for non-selected objects (BLACK)
 const COLOR_BLACK = 0;
 
@@ -211,7 +225,8 @@ class SineWave extends WaveShape {
     // Call the original ctor
     super([x,y], size, 'sine');
 
-    this.shape = new Circle([x,y], size, [22, 133, 248, 255]);
+    this.shape = new Circle([x,y], size
+      , [SINE_COLOR.r, SINE_COLOR.g, SINE_COLOR.b, SINE_COLOR.a]);
     this.collider = new CircleCollider(this.shape);
   }
 }
@@ -221,7 +236,8 @@ class SquareWave extends WaveShape {
     // Call the original ctor
     super([x,y], size, 'square');
 
-    this.shape = new Square([x,y], size, [250, 235, 44, 255]);
+    this.shape = new Square([x,y], size, [SQUARE_COLOR.r, SQUARE_COLOR.g
+      , SQUARE_COLOR.b, SQUARE_COLOR.a]);
     this.collider = new SquareCollider(this.shape);
   }
 }
@@ -231,7 +247,8 @@ class TriangleWave extends WaveShape {
     // Call the orginal ctor
     super([x,y], size, 'triangle');
 
-    this.shape = new Triangle([x,y], size, [233, 0, 255, 255]);
+    this.shape = new Triangle([x,y], size, [TRIANGLE_COLOR.r, TRIANGLE_COLOR.g
+      , TRIANGLE_COLOR.b, TRIANGLE_COLOR.a]);
     // TODO: Update to triangle collision
     this.collider = new SquareCollider(this.shape);
   }
@@ -242,7 +259,8 @@ class SawtoothWave extends WaveShape {
     // Call the orginal ctor
     super([x,y], size, 'sawtooth');
 
-    this.shape = new Sawtooth([x,y], size, [245, 39, 137, 255]);
+    this.shape = new Sawtooth([x,y], size, [SAWTOOTH_COLOR.r, SAWTOOTH_COLOR.g
+      , SAWTOOTH_COLOR.b, SAWTOOTH_COLOR.a]);
     // TODO: Update to triangle collision
     this.collider = new SquareCollider(this.shape);
   }
