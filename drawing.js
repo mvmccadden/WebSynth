@@ -21,6 +21,10 @@ const COLOR_GREEN = {
   r: 0, g: 255, b: 0
 };
 
+const TITLE_TEXT_SIZE = 25;
+const DEFAULT_TEXT_SIZE = 25;
+const SMALL_TEXT_SIZE = 16;
+
 /*!
  * A base class used to define what shapes are and ensure that all
  * shapes conform to a standard
@@ -180,6 +184,14 @@ class Text {
     return this.value;
   }
 
+  get PosX() {
+    return this.x;
+  }
+
+  get PosY() {
+    return this.y;
+  }
+
   SetPos([x,y]) {
     this.x = x;
     this.y = y;
@@ -217,17 +229,86 @@ class Text {
   }
 }
 
+class Text2 {
+  constructor([x,y], size, maxWidth, maxHeight, color, string) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.maxWidth = maxWidth;
+    this.maxHeight = maxHeight;
+
+    this.color = color;
+
+    this.string = string;
+  }
+
+  SetPos([x, y]) {
+    this.x = x;
+    this.y = y;
+  }
+
+  SetSize(size) {
+    this.size = size;
+  }
+
+  SetMaxWidth(maxWidth) {
+    this.maxWidth = maxWidth;
+  }
+
+  SetMaxHeight(maxHeight) {
+    this.maxHeight = maxHeight;
+  }
+
+  SetColor(color) {
+    this.color = color;
+  }
+
+  SetString(string) {
+    this.string = string;
+  }
+
+  get Pos() {
+    return [this.x, this.y];
+  }
+
+  get Size() {
+    return this.size;
+  }
+
+  get MaxWidth() {
+    return this.maxWidth;
+  }
+
+  get MaxHeight() {
+    return this.maxHeight;
+  }
+
+  get Color() {
+    return this.color;
+  }
+
+  get String() {
+    return this.string;
+  }
+
+  Draw() {
+    fill(this.color);
+    textSize(this.size);
+    text(this.string, this.x, this.y, this.maxWidth, this.maxHeight);
+  }
+}
+
 /*!
  *  A class used to draw vertical line dividors with optional text 
  */
 class VerticalDividor {
-  constructor(x, y_a, y_b, string) {
+  constructor(x, string) {
     this.x = x;
-    this.y_a = y_a;
-    this.y_b = y_b;
+    this.y_a = 0;
+    this.y_b = windowSize.y;
 
     this.x_txt = x + 10;
-    this.y_txt = Math.abs((y_a - y_b)/2);
+    this.y_txt = Math.abs((this.y_a - this.y_b)/2);
 
     this.string = string;
   }
@@ -235,7 +316,7 @@ class VerticalDividor {
   Draw() {
     fill(COLOR_GRAY);
     line(this.x, this.y_a, this.x, this.y_b);
-    textSize(16);
+    textSize(SMALL_TEXT_SIZE);
     text(this.string, this.x_txt, this.y_txt);
   }
 }

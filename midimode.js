@@ -34,6 +34,7 @@ const MIN_OCTAVE = -4;
 const MAX_OCTAVE = 4;
 const AFOUR = 440;
 const KEY_COUNT = 12;
+const INVALID_KEY = -11;
 
 const SUSTAINON = {
   text: "Sustain: ON", 
@@ -45,8 +46,7 @@ const SUSTAINOFF = {
   color: COLOR_RED
 };
 
-const FREQ_SPECTRUM_COUNT = 6;
-let freqSpectrum = new Array(FREQ_SPECTRUM_COUNT);
+let freqSpectrum = [];
 
 //==================//
 //= Midi variables =//
@@ -146,10 +146,12 @@ function UpdateMidiInfoText(keyValue, freq, amp) {
   // TODO: Find a way to show no note if thier is no valid midi note passed
   
   // Add the octave and note values to the string
-  catString += noteValue + octaveValue.toString();
+  if(keyValue != INVALID_KEY) {
+    catString += noteValue + octaveValue.toString() + " ";
+  }
   // Add the frequency and amplitude to the string 
   // and round the decimal to the 2nd decimal place
-  catString += " Frequency: " + freq.toFixed(2) 
+  catString += "Frequency: " + freq.toFixed(2) 
     + " Amplitude: " + amp.toFixed(2);
 
   // Place the string into the displayinfostring
@@ -167,6 +169,10 @@ function MidiEvents() {
     extraInfoText.SetString("");
     return;
   }
+
+  // Update the sustain text first since the rest of the function
+  // doesn't update the sustain state
+  UpdateSustainText();
 
   let [x,y] = selectedWave.Pos;
   // We start at A4 (440Hz) at (H) and move from there
@@ -225,14 +231,6 @@ function MidiEvents() {
 }
 
 /*!
- *  Handle drawing freq points on screen to help the user read the logrithmic
- *  spacing more easily
- */
-function DrawFreqSpectrum() {
-
-}
-
-/*!
  *  Handles functionality for key presses during midi mode
  */
 function MidiKeyPressed() {
@@ -247,8 +245,6 @@ function MidiKeyPressed() {
     // it during midi mode
     if(selectedWave != 'undefined') {
       selectedWave.ToggleSustain();
-      // Update text for sustain
-      UpdateSustainText();
     }
   }
   else if(key == 'ArrowRight') {
@@ -285,16 +281,38 @@ function MidiKeyPressed() {
  *  Set the defaults for the frequency spectrum dividor and text
  */
 function CreateFreqSpectrum() {
-  const windowSizeVal = windowSize.x / (FREQ_SPECTRUM_COUNT + 1);
-  let spectrumX = 0;
-  let freqVal = 0;
-  for(let i = 0; i < freqSpectrum.length; ++i) {
-    spectrumX = windowSizeVal * (i+1);
-    freqVal = Math.exp(constrain(map(spectrumX, 0, windowSize.x, MIN_LOG_FREQ
-      , MAX_LOG_FREQ), MIN_LOG_FREQ, MAX_LOG_FREQ), 0.1);
-    freqSpectrum[i] = new VerticalDividor(spectrumX, 0
-        , windowSize.y, "Freq: " + freqVal.toFixed(2));
-  }
+  // Reset the array to create new spectrum objects
+  freqSpectrum.length = 0;
+  
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(21)
+    , "A0"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(33)
+    , "A1"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(45)
+    , "A2"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(57)
+    , "A3"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(69)
+    , "A4 (440Hz)"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(81)
+    , "A5"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(93)
+    , "A6"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(105)
+    , "A7"));
+  freqSpectrum.push(new VerticalDividor(CalculateFrequencyPosition(117)
+    , "A8"));
+}
+
+/*!
+ *  Calculates the x pos of a given midi key
+ */
+function CalculateFrequencyPosition(val) {
+  let posVal = Math.log(AFOUR 
+    * Math.pow(2, (val - 69)/12));
+  // Set the new x pos and then update the wave
+  return constrain(map(posVal, MIN_LOG_FREQ, MAX_LOG_FREQ, 0
+    , windowSize.x), 0, windowSize.x);
 }
 
 /*!

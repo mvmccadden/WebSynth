@@ -7,6 +7,7 @@
  */
 
 const DEFAULT_WAVE_SIZE = 50;
+const SPAWNER_WAVE_SIZE = 75;
 
 class Spawner {
   constructor([x,y]) {
@@ -42,7 +43,6 @@ class Spawner {
       (mouseIsPressed == true && this.spawnOnNextChance == true)) {
       this.shape.SetPos([mouseX, mouseY]);
       this.spawnOnNextChance = true;
-      console.log("COLLISION");
       return;
     }
 
@@ -66,7 +66,7 @@ class SineSpawner extends Spawner {
 
     this.spawnType = 'si';
 
-    this.shape = new Circle([x,y], DEFAULT_WAVE_SIZE
+    this.shape = new Circle([x,y], SPAWNER_WAVE_SIZE 
       , [SINE_COLOR.r, SINE_COLOR.g, SINE_COLOR.b, SINE_COLOR.a]);
     this.collider = new CircleCollider(this.shape);
   }
@@ -78,7 +78,7 @@ class TriangleSpawner extends Spawner {
 
     this.spawnType = 'tr';
 
-    this.shape = new Triangle([x,y], DEFAULT_WAVE_SIZE
+    this.shape = new Triangle([x,y], SPAWNER_WAVE_SIZE  
       , [TRIANGLE_COLOR.r, TRIANGLE_COLOR.g, TRIANGLE_COLOR.b, TRIANGLE_COLOR.a]);
     this.collider = new SquareCollider(this.shape);
   }
@@ -90,7 +90,7 @@ class SawtoothSpawner extends Spawner {
 
     this.spawnType = 'sw';
 
-    this.shape = new Sawtooth([x,y], DEFAULT_WAVE_SIZE
+    this.shape = new Sawtooth([x,y], SPAWNER_WAVE_SIZE  
       , [SAWTOOTH_COLOR.r, SAWTOOTH_COLOR.g, SAWTOOTH_COLOR.b, SAWTOOTH_COLOR.a]);
     this.collider = new SquareCollider(this.shape);
   }
@@ -102,7 +102,7 @@ class SquareSpawner extends Spawner {
 
     this.spawnType = 'sq';
 
-    this.shape = new Square([x,y], DEFAULT_WAVE_SIZE
+    this.shape = new Square([x,y], SPAWNER_WAVE_SIZE  
       , [SQUARE_COLOR.r, SQUARE_COLOR.g, SQUARE_COLOR.b, SQUARE_COLOR.a]);
     this.collider = new SquareCollider(this.shape);
   }
@@ -125,5 +125,15 @@ function SpawnWave(type) {
     waves.push(new SawtoothWave([mouseX, mouseY], DEFAULT_WAVE_SIZE));
     waves[waves.length - 1].Select();
   }
+
+  // Update the selectedWave so it's values show properly
+  selectedWave.Update();
+
+  // Using an invalid key in order to ensure that no key is written to the 
+  // midi's text
+  // NOTE: This is because we are unsure if the user placed it close enough
+  // for it to be a valid MIDI note
+  UpdateMidiInfoText(INVALID_KEY, selectedWave.Freq, selectedWave.Amp);
+  UpdateSustainText();
 }
 

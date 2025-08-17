@@ -45,19 +45,12 @@ const BACKGROUND_COLOR = {
 // NOTE: Look into changing this to be an array of mode classes
 const MODES = [
   {
-    text: "MODE: Osc", 
-    value: 0, 
-    init: 'undefined',
-    update: 'undefined',
-    // TODO: In osc exit set so that it clears display text
-    exit: 'undefined'
-  },
-  {
+    name: "Midi",
     text: "MODE: Midi", 
-    value: 1,
     init: MidiInit,
     update: MidiUpdate,
-    exit: MidiExit
+    exit: MidiExit,
+    input: MidiKeyPressed
   }
 ]
 
@@ -89,6 +82,9 @@ function setup() {
   // Set the x limit of the window size to the edge
   // of the GUI
   windowSize.x = gui.PosX;
+
+  // Init the active mode
+  MODES[activeMode].init();
 }
 
 function draw() {
