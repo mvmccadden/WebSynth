@@ -136,3 +136,13 @@ function keyReleased() {
   }
 }
 
+function mousePressed() {
+  // Avoid starting audio till user input is given to allign with browser
+  // policy standards
+  userStartAudio();
+  // Checking all waves on any mouse input to see if any are 
+  // being collided with
+  for(const wave of waves) {
+    wave.CollisionCheck();
+  }
+}

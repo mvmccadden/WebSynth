@@ -80,6 +80,9 @@ class WaveShape {
     // A selection variable used to connect objects to the mouse movement
     // in order to move them around the plane
     this.selected = false;
+
+    this.latestNote = MIDI_NOTES[0];
+    this.octave = Math.round(x / (windowSize.x / TOTAL_OCTAVES) - MAX_OCTAVE);
   }
 
   get Playing() {
@@ -110,6 +113,14 @@ class WaveShape {
     return this.osc.Amp;
   }
 
+  get LatestNote() {
+    return this.latestNote;
+  }
+
+  get Octave() {
+    return this.octave;
+  }
+
   ToggleSustain() {
     this.sustain = !this.sustain;
   }
@@ -131,17 +142,34 @@ class WaveShape {
     this.size = size;
   }
 
+  SetLastestNote(note) {
+    this.latestNote = note;
+  }
+
+  SetOctave(octave) {
+    this.octave = octave;
+  }
+
   Select() {
-    this.selected = true;
     // Set this to the selected wave and unselected wave if one is selected
     if(selectedWave != 'undefined') {
       selectedWave.Unselect();
     }
     selectedWave = this;
+    this.selected = true;
+    // Add the last playing note to the playing list to ensure it stays 
+    // playing if sustain is active
+    if(this.sustain == true) {
+      playingNotes.push(this.latestNote);
+    }
   }
 
   Unselect() {
+    selectedWave = 'undefined';
     this.selected = false;
+    if(this.sustain == false) {
+      this.Stop();
+    }
   }
 
   /*!
@@ -176,28 +204,11 @@ class WaveShape {
     this.collider.Update();
 
     if(this.collider.Collision == true) {
-      // If user is pressing LEFT-CTL(17) when they collide then we enable 
-      // selection without adjusting playback to allow for a silent play
-      if(keyIsDown(17) == true) {
-        this.selected = true;
-      }
-      else if(this.osc.Playing == true) {
-        this.osc.Stop();
-      }
-      // If user is currently selecting this object and has collided with it 
-      // then we are placing it and must stop moving it therefore we must
-      // disable selection
-      else if(this.selected == true) {
-        this.selected == false;
-      }
-      else {
-        this.selected = true;
-        this.osc.Play();
-      }
+      this.Select();
     }
     // If not colliding then make sure that selection is disabled
-    else {
-      this.selected = false;
+    else if(this.selected == true) {
+      this.Unselect();
     }
   }
 

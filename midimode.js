@@ -36,6 +36,8 @@ const AFOUR = 440;
 const KEY_COUNT = 12;
 const INVALID_KEY = -11;
 
+const TOTAL_OCTAVES = 8;
+
 const SUSTAINON = {
   text: "Sustain: ON", 
   color: COLOR_GREEN
@@ -51,7 +53,6 @@ let freqSpectrum = [];
 //==================//
 //= Midi variables =//
 //==================//
-let midiOctave = 0;
 // An array used as a stack which keeps tracks of which notes have been pressed 
 let playingNotes = []
 
@@ -93,7 +94,7 @@ function UpdateMidiInfoText(keyValue, freq, amp) {
   let catString = "";
   let noteValue = "";
   // Get the current octave of the majority of keys active
-  let octaveValue = 4 + midiOctave;
+  let octaveValue = 4 + selectedWave.Octave;
 
   // Set the octave to the correct octave if the note is on the 
   // upper half of keys
@@ -191,6 +192,8 @@ function MidiEvents() {
     if(keyIsDown(playingNotes[i].note.charCodeAt(0))
       || selectedWave.Sustain == true) {
       // leave the loop a valid key is found from the stack
+      // and set the current note being played
+      selectedWave.SetLastestNote(playingNotes[i]);
       break;
     }
     // If the most recently added note is no longer being played then 
@@ -207,13 +210,15 @@ function MidiEvents() {
   // and risk causing undefined errors
   if(i < 0) {
     selectedWave.Stop();
+    UpdateMidiInfoText(selectedWave.LatestNote.pow
+      , selectedWave.Freq, selectedWave.Amp);
     return;
   }
 
   // TODO: see if we can adjust so that this is only updated when a key 
   // is either lifted or pressed
   posVal = Math.log(AFOUR 
-    * Math.pow(2, (playingNotes[i].pow + midiOctave * 12)/12));
+    * Math.pow(2, (selectedWave.LatestNote.pow + selectedWave.Octave * 12)/12));
   // Set the new x pos and then update the wave
   x = constrain(map(posVal, MIN_LOG_FREQ, MAX_LOG_FREQ, 0
     , windowSize.x), 0, windowSize.x);
@@ -227,7 +232,8 @@ function MidiEvents() {
   }
 
   // Update the midi info shown on screen using the updated values
-  UpdateMidiInfoText(playingNotes[i].pow, selectedWave.Freq, selectedWave.Amp);
+  UpdateMidiInfoText(selectedWave.LatestNote.pow
+    , selectedWave.Freq, selectedWave.Amp);
 }
 
 /*!
@@ -235,10 +241,10 @@ function MidiEvents() {
  */
 function MidiKeyPressed() {
   if(key == 'z') {
-    midiOctave = constrain(midiOctave - 1, MIN_OCTAVE, MAX_OCTAVE);
+    UpdateOctave('down');
   }
   else if(key == 'x') {
-    midiOctave = constrain(midiOctave + 1, MIN_OCTAVE, MAX_OCTAVE);
+    UpdateOctave('up');
   }
   else if(key == 'Shift') {
     // If a wave is selected then toggle sustain properties on 
@@ -272,9 +278,6 @@ function MidiKeyPressed() {
       }
     }
   }
-
-  // Do one run of midi events to update the freq of the selected wave
-  MidiEvents();
 }
 
 /*!
@@ -339,6 +342,7 @@ function MidiInit() {
  */
 function MidiUpdate() {
   DrawFreqSpectrum();
+  MidiEvents();
 }
 
 /*!
@@ -347,4 +351,22 @@ function MidiUpdate() {
 function MidiExit() {
   // Reset sustain text back to an empty state
   extraInfoText.SetString("");
+}
+
+/*!
+ *  Update the octave of the selected wave
+ */
+function UpdateOctave(direction) {
+  if(selectedWave == 'undefined') {
+    return;
+  }
+
+  let midiOctave = selectedWave.Octave;
+  if(direction == 'up') {
+    midiOctave = constrain(midiOctave + 1, MIN_OCTAVE, MAX_OCTAVE);
+  }
+  else {
+    midiOctave = constrain(midiOctave - 1, MIN_OCTAVE, MAX_OCTAVE);
+  }
+  selectedWave.SetOctave(midiOctave);
 }
