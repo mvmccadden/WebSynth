@@ -18,6 +18,20 @@ const SELECT_COLOR = {
 const PLAYING_COLOR = {
   r: 10, g: 230, b: 20
 }
+
+// Shape colors
+const SINE_COLOR = {
+  r: 22, g: 133, b: 248, a: 255
+}
+const TRIANGLE_COLOR = {
+  r: 233, g: 0, b: 255, a: 255
+}
+const SAWTOOTH_COLOR = {
+  r: 245, g: 39, b: 137, a: 255
+}
+const SQUARE_COLOR = {
+  r: 250, g: 235, b: 44, a: 255
+}
 // Color for non-selected objects (BLACK)
 const COLOR_BLACK = 0;
 
@@ -50,6 +64,12 @@ let selectedWave = 'undefined';
  *  Constructs a new base wave shape that can be drawn a played
  */
 class WaveShape {
+  static waveID = 0;
+
+  static IncrementWaveID() {
+    return WaveShape.waveID++;
+  }
+
   constructor([x,y], size, waveType) {
     this.x = x;
     this.y = y;
@@ -66,6 +86,11 @@ class WaveShape {
     // A selection variable used to connect objects to the mouse movement
     // in order to move them around the plane
     this.selected = false;
+
+    this.latestNote = MIDI_NOTES[0];
+    this.octave = Math.round(x / (windowSize.x / TOTAL_OCTAVES) - MAX_OCTAVE);
+
+    this.id = WaveShape.IncrementWaveID();
   }
 
   get Playing() {
@@ -96,6 +121,18 @@ class WaveShape {
     return this.osc.Amp;
   }
 
+  get LatestNote() {
+    return this.latestNote;
+  }
+
+  get Octave() {
+    return this.octave;
+  }
+
+  get ID() {
+    return this.id;
+  }
+
   ToggleSustain() {
     this.sustain = !this.sustain;
   }
@@ -117,17 +154,34 @@ class WaveShape {
     this.size = size;
   }
 
+  SetLastestNote(note) {
+    this.latestNote = note;
+  }
+
+  SetOctave(octave) {
+    this.octave = octave;
+  }
+
   Select() {
-    this.selected = true;
     // Set this to the selected wave and unselected wave if one is selected
     if(selectedWave != 'undefined') {
       selectedWave.Unselect();
     }
     selectedWave = this;
+    this.selected = true;
+    // Add the last playing note to the playing list to ensure it stays 
+    // playing if sustain is active
+    if(this.sustain == true) {
+      playingNotes.push(this.latestNote);
+    }
   }
 
   Unselect() {
+    selectedWave = 'undefined';
     this.selected = false;
+    if(this.sustain == false) {
+      this.Stop();
+    }
   }
 
   /*!
@@ -162,28 +216,11 @@ class WaveShape {
     this.collider.Update();
 
     if(this.collider.Collision == true) {
-      // If user is pressing LEFT-CTL(17) when they collide then we enable 
-      // selection without adjusting playback to allow for a silent play
-      if(keyIsDown(17) == true) {
-        this.selected = true;
-      }
-      else if(this.osc.Playing == true) {
-        this.osc.Stop();
-      }
-      // If user is currently selecting this object and has collided with it 
-      // then we are placing it and must stop moving it therefore we must
-      // disable selection
-      else if(this.selected == true) {
-        this.selected == false;
-      }
-      else {
-        this.selected = true;
-        this.osc.Play();
-      }
+      this.Select();
     }
     // If not colliding then make sure that selection is disabled
-    else {
-      this.selected = false;
+    else if(this.selected == true) {
+      this.Unselect();
     }
   }
 
@@ -211,7 +248,8 @@ class SineWave extends WaveShape {
     // Call the original ctor
     super([x,y], size, 'sine');
 
-    this.shape = new Circle([x,y], size, [22, 133, 248, 255]);
+    this.shape = new Circle([x,y], size
+      , [SINE_COLOR.r, SINE_COLOR.g, SINE_COLOR.b, SINE_COLOR.a]);
     this.collider = new CircleCollider(this.shape);
   }
 }
@@ -221,7 +259,8 @@ class SquareWave extends WaveShape {
     // Call the original ctor
     super([x,y], size, 'square');
 
-    this.shape = new Square([x,y], size, [250, 235, 44, 255]);
+    this.shape = new Square([x,y], size, [SQUARE_COLOR.r, SQUARE_COLOR.g
+      , SQUARE_COLOR.b, SQUARE_COLOR.a]);
     this.collider = new SquareCollider(this.shape);
   }
 }
@@ -231,7 +270,8 @@ class TriangleWave extends WaveShape {
     // Call the orginal ctor
     super([x,y], size, 'triangle');
 
-    this.shape = new Triangle([x,y], size, [233, 0, 255, 255]);
+    this.shape = new Triangle([x,y], size, [TRIANGLE_COLOR.r, TRIANGLE_COLOR.g
+      , TRIANGLE_COLOR.b, TRIANGLE_COLOR.a]);
     // TODO: Update to triangle collision
     this.collider = new SquareCollider(this.shape);
   }
@@ -242,7 +282,8 @@ class SawtoothWave extends WaveShape {
     // Call the orginal ctor
     super([x,y], size, 'sawtooth');
 
-    this.shape = new Sawtooth([x,y], size, [245, 39, 137, 255]);
+    this.shape = new Sawtooth([x,y], size, [SAWTOOTH_COLOR.r, SAWTOOTH_COLOR.g
+      , SAWTOOTH_COLOR.b, SAWTOOTH_COLOR.a]);
     // TODO: Update to triangle collision
     this.collider = new SquareCollider(this.shape);
   }

@@ -16,8 +16,6 @@ class Collider {
     this.entity = entity;
     // Sets the default state for collisions to false
     this.collision = false;
-
-    console.log(entity.Pos);
   }
 
   OverrideCollision(collision) {

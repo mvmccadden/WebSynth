@@ -45,19 +45,12 @@ const BACKGROUND_COLOR = {
 // NOTE: Look into changing this to be an array of mode classes
 const MODES = [
   {
-    text: "MODE: Osc", 
-    value: 0, 
-    init: 'undefined',
-    update: 'undefined',
-    // TODO: In osc exit set so that it clears display text
-    exit: 'undefined'
-  },
-  {
+    name: "Midi",
     text: "MODE: Midi", 
-    value: 1,
     init: MidiInit,
     update: MidiUpdate,
-    exit: MidiExit
+    exit: MidiExit,
+    input: MidiKeyPressed
   }
 ]
 
@@ -84,11 +77,22 @@ function setup() {
   modeText = new Text([10, 30], [255,255,255,255], MODES[activeMode].text
     , 20, 0, false, false);
   extraInfoText = new Text([10, 90], [255,255,255,255], "", 20, 0, true, false);
+
+  gui = new GUI();
+  // Set the x limit of the window size to the edge
+  // of the GUI
+  windowSize.x = gui.PosX;
+
+  // Init the active mode
+  MODES[activeMode].init();
 }
 
 function draw() {
   // Clear the background
   background(BACKGROUND_COLOR.r, BACKGROUND_COLOR.g, BACKGROUND_COLOR.b);
+
+  gui.Update();
+  gui.Draw();
 
   // Do the update function that proper to the mode that is active
   if(MODES[activeMode].update != 'undefined') {
@@ -97,18 +101,7 @@ function draw() {
 
   // Update the selected object if it exists until it is no longer selected
   if(selectedWave != 'undefined') {
-    // Set the obj back to undefined if it is unselected
-    // As we are updating it seperate of all over objects we must
-    // do adjustments here as it will not happen in the loop
-    // NOTE: we do the selection check before the update as the mouse press
-    // seems to update before the draw is called 
-    if(selectedWave.Selected == false) {
-      selectedWave = 'undefined';
-    }
-    else {
-      selectedWave.Update();
-    }
-
+    selectedWave.Update();
   }
 
   // For all other waves we will simply draw them as we do not want to allow
@@ -121,29 +114,4 @@ function draw() {
   displayText.Print();
   modeText.Print();
   extraInfoText.Print();
-}
-
-function mousePressed() {
-  // Avoid starting audio till user input is given to allign with browser
-  // policy standards
-  userStartAudio();
-  // Checking all waves on any mouse input to see if any are 
-  // being collided with
-  for(const wave of waves) {
-    wave.CollisionCheck();
-    // Check all waves for selection so that they can be properly updated
-    // NOTE: will prioritize the last wave added if multiple are overlaying
-    // one another but this should be ok as that means that it will be 
-    // overylaying visually as well so should be intuative and make sense
-    // to the user
-    if(wave.Selected == true) {
-      // Make sure to set the selected status of the currently selected wave
-      // to unselected if there is currently one selected
-      if(selectedWave != 'undefined') {
-        selectedWave.Unselect();
-      }
-      selectedWave = wave;
-    }
-
-  }
 }

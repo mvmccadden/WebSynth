@@ -7,6 +7,135 @@
  */
 
 const DEFAULT_WAVE_SIZE = 50;
+const SPAWNER_WAVE_SIZE = 75;
+
+class Spawner {
+  /*! 
+   *  A static variable that tracks which spawner is active to ensure only
+   *  spawner is in use at a time
+   */
+
+  static activeSpawner = 'undefined';
+
+  /*!
+   *  Set the global active spawner
+   *
+   *  \param spawner
+   *    The spawner which is currently active
+   */
+  static SetActiveSpawner(spawner) {
+    Spawner.activeSpawner = spawner;
+  }
+
+  /*!
+   *  \returns
+   *    The currently active global spawner
+   */
+  static GetActiveSpawner() {
+    return Spawner.activeSpawner;
+  }
+
+  constructor([x,y]) {
+    this.x = x;
+    this.y = y;
+
+    this.shape = new Shape([0,0], 0, [0,0,0,0]);
+    this.collider = new Collider(this.shape);
+
+    this.spawnOnNextChance = false;
+    this.spawnType = '';
+  }
+
+  Draw() {
+    this.shape.Draw();
+  }
+  
+  Update() {
+    // Check the collision state.
+    //
+    // Follow the mouse to the spawn position
+    //
+    // If a collision has occured trigger bool to notify update function to 
+    // spawn a wave on the next update where the objectis not colliding.
+    //
+    // Secondary condition is added to ensure that even if you move too quickly 
+    // for the shape to keep up with you will retain its position and not 
+    // accidentally spawn a shape somewhere you don't want to
+    // NOTE: Would be good to look into ensuring this isn't foribly updated 
+    // every update loop if possible
+    this.collider.Update();
+    if((this.collider.Collision == true || this.spawnOnNextChance == true)
+        && mouseIsPressed == true 
+        && (Spawner.GetActiveSpawner() == this 
+        || Spawner.GetActiveSpawner() == 'undefined')) {
+      this.shape.SetPos([mouseX, mouseY]);
+      this.spawnOnNextChance = true;
+      Spawner.SetActiveSpawner(this);
+      return;
+    }
+
+    if(this.spawnOnNextChance == false) {
+      return;
+    }
+    // Don't spawn a wave if the user is trying to spawn it outside of the
+    // given window size
+    if(mouseX <= windowSize.x) {
+      SpawnWave(this.spawnType);
+    }
+
+    this.shape.SetPos([this.x, this.y]);
+    this.spawnOnNextChance = false;
+    Spawner.SetActiveSpawner('undefined');
+  }
+}
+
+class SineSpawner extends Spawner {
+  constructor([x,y]) {
+    super([x,y]);
+
+    this.spawnType = 'si';
+
+    this.shape = new Circle([x,y], SPAWNER_WAVE_SIZE 
+      , [SINE_COLOR.r, SINE_COLOR.g, SINE_COLOR.b, SINE_COLOR.a]);
+    this.collider = new CircleCollider(this.shape);
+  }
+}
+
+class TriangleSpawner extends Spawner {
+  constructor([x,y]) {
+    super([x,y]);
+
+    this.spawnType = 'tr';
+
+    this.shape = new Triangle([x,y], SPAWNER_WAVE_SIZE  
+      , [TRIANGLE_COLOR.r, TRIANGLE_COLOR.g, TRIANGLE_COLOR.b, TRIANGLE_COLOR.a]);
+    this.collider = new SquareCollider(this.shape);
+  }
+}
+
+class SawtoothSpawner extends Spawner {
+  constructor([x,y]) {
+    super([x,y]);
+
+    this.spawnType = 'sw';
+
+    this.shape = new Sawtooth([x,y], SPAWNER_WAVE_SIZE  
+      , [SAWTOOTH_COLOR.r, SAWTOOTH_COLOR.g, SAWTOOTH_COLOR.b, SAWTOOTH_COLOR.a]);
+    this.collider = new SquareCollider(this.shape);
+  }
+}
+
+class SquareSpawner extends Spawner {
+  constructor([x,y]) {
+    super([x,y]);
+
+    this.spawnType = 'sq';
+
+    this.shape = new Square([x,y], SPAWNER_WAVE_SIZE  
+      , [SQUARE_COLOR.r, SQUARE_COLOR.g, SQUARE_COLOR.b, SQUARE_COLOR.a]);
+    this.collider = new SquareCollider(this.shape);
+  }
+}
 
 function SpawnWave(type) {
   if(type == 'si') {
@@ -25,5 +154,15 @@ function SpawnWave(type) {
     waves.push(new SawtoothWave([mouseX, mouseY], DEFAULT_WAVE_SIZE));
     waves[waves.length - 1].Select();
   }
+
+  // Update the selectedWave so it's values show properly
+  selectedWave.Update();
+
+  // Using an invalid key in order to ensure that no key is written to the 
+  // midi's text
+  // NOTE: This is because we are unsure if the user placed it close enough
+  // for it to be a valid MIDI note
+  UpdateMidiInfoText(INVALID_KEY, selectedWave.Freq, selectedWave.Amp);
+  UpdateSustainText();
 }
 
