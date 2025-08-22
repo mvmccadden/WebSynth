@@ -10,6 +10,31 @@ const DEFAULT_WAVE_SIZE = 50;
 const SPAWNER_WAVE_SIZE = 75;
 
 class Spawner {
+  /*! 
+   *  A static variable that tracks which spawner is active to ensure only
+   *  spawner is in use at a time
+   */
+
+  static activeSpawner = 'undefined';
+
+  /*!
+   *  Set the global active spawner
+   *
+   *  \param spawner
+   *    The spawner which is currently active
+   */
+  static SetActiveSpawner(spawner) {
+    Spawner.activeSpawner = spawner;
+  }
+
+  /*!
+   *  \returns
+   *    The currently active global spawner
+   */
+  static GetActiveSpawner() {
+    return Spawner.activeSpawner;
+  }
+
   constructor([x,y]) {
     this.x = x;
     this.y = y;
@@ -39,10 +64,13 @@ class Spawner {
     // NOTE: Would be good to look into ensuring this isn't foribly updated 
     // every update loop if possible
     this.collider.Update();
-    if(this.collider.Collision == true || 
-      (mouseIsPressed == true && this.spawnOnNextChance == true)) {
+    if((this.collider.Collision == true || this.spawnOnNextChance == true)
+        && mouseIsPressed == true 
+        && (Spawner.GetActiveSpawner() == this 
+        || Spawner.GetActiveSpawner() == 'undefined')) {
       this.shape.SetPos([mouseX, mouseY]);
       this.spawnOnNextChance = true;
+      Spawner.SetActiveSpawner(this);
       return;
     }
 
@@ -57,6 +85,7 @@ class Spawner {
 
     this.shape.SetPos([this.x, this.y]);
     this.spawnOnNextChance = false;
+    Spawner.SetActiveSpawner('undefined');
   }
 }
 

@@ -143,6 +143,73 @@ class Triangle extends Shape {
 }
 
 /*!
+ *  A unique drawing class that draws a boxes outline using 
+ *  the p5 rect functionality
+ */
+class Box {
+  constructor([x,y], [w,h], [r,g,b,a]) {
+    this.x = x;
+    this.y = y;
+
+    this.w = w;
+    this.h = h;
+
+    this.r = r;
+    this.g = g;
+    this.b = b;
+    this.a = a;
+  }
+
+  /*!
+   *  \returns 
+   *    The position of the box in [x,y] format
+   */
+  get Pos() {
+    return [this.x, this.y];
+  }
+
+  /*!
+   *  \returns 
+   *    The size of the box in [w,h] format
+   */
+  get Size() {
+    return [this.w, this.y];
+  }
+
+  /*!
+   *  Sets the position of the box in [x,y] format
+   *
+   *  \param x
+   *    The the x-axis position of the box
+   *  \param y
+   *    The the y-axis position of the box
+   */
+  SetPos([x,y]) {
+    this.x = x;
+    this.y = y;
+  }
+
+  /*!
+   *  Sets the size of the box in [w,h] format
+   *
+   *  \param w
+   *    The width of the box
+   *  \param h
+   *    The height of the box
+   */
+  SetSize() {
+    this.w = w;
+    this.h = h;
+  }
+
+  Draw() {
+    fill(this.r, this.g, this.b, this.a);
+    stroke(255);
+    rect(this.x, this.y, this.w, this.h);
+  }
+}
+
+/*!
  *  A class used to draw some text onto the screen
  */
 class Text {

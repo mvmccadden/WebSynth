@@ -64,6 +64,12 @@ let selectedWave = 'undefined';
  *  Constructs a new base wave shape that can be drawn a played
  */
 class WaveShape {
+  static waveID = 0;
+
+  static IncrementWaveID() {
+    return WaveShape.waveID++;
+  }
+
   constructor([x,y], size, waveType) {
     this.x = x;
     this.y = y;
@@ -83,6 +89,8 @@ class WaveShape {
 
     this.latestNote = MIDI_NOTES[0];
     this.octave = Math.round(x / (windowSize.x / TOTAL_OCTAVES) - MAX_OCTAVE);
+
+    this.id = WaveShape.IncrementWaveID();
   }
 
   get Playing() {
@@ -119,6 +127,10 @@ class WaveShape {
 
   get Octave() {
     return this.octave;
+  }
+
+  get ID() {
+    return this.id;
   }
 
   ToggleSustain() {

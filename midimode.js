@@ -48,13 +48,14 @@ const SUSTAINOFF = {
   color: COLOR_RED
 };
 
-let freqSpectrum = [];
-
 //==================//
 //= Midi variables =//
 //==================//
 // An array used as a stack which keeps tracks of which notes have been pressed 
-let playingNotes = []
+let playingNotes = [];
+let freqSpectrum = [];
+
+let selectionBox;
 
 //==================//
 //= Midi Functions =//
@@ -157,6 +158,55 @@ function UpdateMidiInfoText(keyValue, freq, amp) {
 
   // Place the string into the displayinfostring
   displayText.SetString(catString);
+}
+
+/*!
+ *  Update the octave of the selected wave
+ */
+function UpdateOctave(direction) {
+  if(selectedWave == 'undefined') {
+    return;
+  }
+
+  let midiOctave = selectedWave.Octave;
+  if(direction == 'up') {
+    midiOctave = constrain(midiOctave + 1, MIN_OCTAVE, MAX_OCTAVE);
+  }
+  else {
+    midiOctave = constrain(midiOctave - 1, MIN_OCTAVE, MAX_OCTAVE);
+  }
+  selectedWave.SetOctave(midiOctave);
+}
+
+/*!
+ *  Deletes the selected wave, remove it from the playing notes, and
+ *  move the selected wave to the next in the queue if it exists
+ */
+function DeleteWave() {
+  if(selectedWave == 'undefined') {
+    return;
+  }
+
+  let numOfElements = 1;
+
+  const selectedWaveIndex = waves.findIndex(wave => wave.ID === selectedWave.ID);
+  selectedWave.Stop();
+  selectedWave.Unselect();
+  waves.splice(selectedWaveIndex, numOfElements);
+  ArrowSelect('left');
+}
+
+/*!
+ *  Turns off all playing notes
+ */
+function StopAllNotes() {
+  if(selectedWave != 'undefined') {
+    selectedWave.Unselect();
+  }
+
+  for(const wave of waves) {
+    wave.Stop();
+  }
 }
 
 /*!
@@ -265,6 +315,12 @@ function MidiKeyPressed() {
   else if(key == 'ArrowDown') {
     ArrowAmpAdjust('down');
   }
+  else if(key == 'Backspace') {
+    DeleteWave();
+  }
+  else if(key == 'Escape') {
+    StopAllNotes();
+  }
   // If the octave isn't being adjust then check all keys for pressed
   else {
     for(const note of MIDI_NOTES) {
@@ -351,22 +407,4 @@ function MidiUpdate() {
 function MidiExit() {
   // Reset sustain text back to an empty state
   extraInfoText.SetString("");
-}
-
-/*!
- *  Update the octave of the selected wave
- */
-function UpdateOctave(direction) {
-  if(selectedWave == 'undefined') {
-    return;
-  }
-
-  let midiOctave = selectedWave.Octave;
-  if(direction == 'up') {
-    midiOctave = constrain(midiOctave + 1, MIN_OCTAVE, MAX_OCTAVE);
-  }
-  else {
-    midiOctave = constrain(midiOctave - 1, MIN_OCTAVE, MAX_OCTAVE);
-  }
-  selectedWave.SetOctave(midiOctave);
 }
